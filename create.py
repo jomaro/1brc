@@ -109,7 +109,7 @@ def build_test_data(weather_station_names, args):
     start_time = time.time()
     coldest_temp = -99.9
     hottest_temp = 99.9
-    batch_size = min(num_rows_to_create, 10000) # instead of writing line by line to file, process a batch of stations and put it to disk
+    batch_size = min(num_rows_to_create, 2_000) # instead of writing line by line to file, process a batch of stations and put it to disk
     progress_step = max(1, (num_rows_to_create // batch_size) // 100)
 
     print(f'Using seed {args.seed}')
@@ -121,7 +121,7 @@ def build_test_data(weather_station_names, args):
             for s in range(0, num_rows_to_create // batch_size):
                 
                 batch = random.choices(weather_station_names, k=batch_size)
-                prepped_deviated_batch = ''.join([f"{station};{random.uniform(coldest_temp, hottest_temp):.1f}\n" for station in batch]) # :.1f should quicker than round on a large scale, because round utilizes mathematical operation
+                prepped_deviated_batch = ''.join(f"{station};{random.uniform(coldest_temp, hottest_temp):.1f}\n" for station in batch) # :.1f should quicker than round on a large scale, because round utilizes mathematical operation
                 file.write(prepped_deviated_batch)
                 
                 # Update progress bar every 1%
