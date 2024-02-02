@@ -20,10 +20,10 @@ OBS. This is a different version from the script provided by the initial propone
 This version has been modified primarily to allow the creation of files with an arbitrary number of rows
 
 ```
-python create.py 1_000 m1k
-python create.py 1_000_000 m1m
-python create.py 10_000_000 m10m
-python create.py 1_000_000_000 m1b
+python create.py -m 1_000 -o m1k
+python create.py -m 1_000_000 -o m1m
+python create.py -m 10_000_000 -o m10m
+python create.py -m 1_000_000_000 -o m1b
 ```
 
 3. Run the elixir sequential version 
