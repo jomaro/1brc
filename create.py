@@ -52,8 +52,8 @@ def build_weather_station_name_list(n_stations: int):
     station_names = []
     with open('weather_stations.csv', 'r') as file:
         for station in file.readlines():
-            if "#" in station:
-                next
+            if station.startswith('#'):
+                continue
             
             station_names.append(station.split(';')[0])
 
