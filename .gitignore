@@ -1,0 +1,6 @@
+
+# data files
+*.txt
+
+# to be downloaded, see README instructions
+weather_stations.csv
