@@ -3,46 +3,25 @@ defmodule Elx do
   Documentation for `Elx`.
   """
 
-  # time: 1487357
-  def version1(file) do
+  alias Elx.SerialV1
+  alias Elx.ParallelV1
+
+  def serial_v1(file) do
+    process(file, &SerialV1.process_file/1)
+  end
+
+  def parallel_v1(file) do
+    process(file, &ParallelV1.process_file/1)
+  end
+
+  defp process(file, func) do
     start = :os.system_time(:millisecond)
 
-    "../#{file}.txt"
-    |> File.stream!(read_ahead: 16*1024)
-    |> Stream.map(fn line ->
-      [station, measurement] = String.split(line, ";")
+    file = "../#{file}.txt"
 
-      {measurement, _} = Float.parse(measurement)
-
-      {station, measurement}
-    end)
-    |> Enum.reduce(%{}, fn {station, measurement}, map ->
-      default = %{
-        sum: measurement,
-        quantity: 1,
-        min: measurement,
-        max: measurement,
-      }
-
-      Map.update(map, station, default,
-        fn existing ->
-          %{
-            sum: existing.sum + measurement,
-            quantity: existing.quantity + 1,
-            min: min(existing.min, measurement),
-            max: max(existing.max, measurement),
-          }
-        end)
-    end)
-    |> Enum.map(fn {station, stats} ->
-      {station, Enum.join([
-        :erlang.float_to_binary(stats.min, [decimals: 1]),
-        :erlang.float_to_binary(stats.sum / stats.quantity, [decimals: 1]),
-        :erlang.float_to_binary(stats.max, [decimals: 1]),
-      ], ",")}
-    end)
+    func.(file)
     |> IO.inspect()
 
-    :os.system_time(:millisecond) - start
+    IO.inspect(:os.system_time(:millisecond) - start, label: "Timing")
   end
 end
