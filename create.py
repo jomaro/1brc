@@ -105,7 +105,6 @@ def build_test_data(weather_station_names, args):
     Generates and writes to file the requested length of test data
     """
     num_rows_to_create = args.measurements
-    output_file_name = f"{args.output}.txt"
     start_time = time.time()
     coldest_temp = -99.9
     hottest_temp = 99.9
@@ -117,7 +116,7 @@ def build_test_data(weather_station_names, args):
     print('Building test data...')
 
     try:
-        with open(output_file_name, 'w') as file:
+        with open(args.output, 'w') as file:
             for s in range(0, num_rows_to_create // batch_size):
                 
                 batch = random.choices(weather_station_names, k=batch_size)
@@ -136,10 +135,10 @@ def build_test_data(weather_station_names, args):
     
     end_time = time.time()
     elapsed_time = end_time - start_time
-    file_size = os.path.getsize(output_file_name)
+    file_size = os.path.getsize(args.output)
     human_file_size = convert_bytes(file_size)
  
-    print(f"Test data successfully written to {output_file_name}")
+    print(f"Test data successfully written to {args.output}")
     print(f"Actual file size:  {human_file_size}")
     print(f"Elapsed time: {format_elapsed_time(elapsed_time)}")
 
