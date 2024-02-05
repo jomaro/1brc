@@ -18,6 +18,7 @@
 # Based on https://github.com/gunnarmorling/1brc/blob/main/src/main/java/dev/morling/onebrc/CreateMeasurements.java
 
 import argparse
+from io import BufferedWriter
 import math
 import os
 import random
@@ -50,12 +51,12 @@ def build_weather_station_name_list(n_stations: int):
     Grabs the weather station names from example data provided in repo and deduplicates
     """
     station_names = []
-    with open('weather_stations.csv', 'r') as file:
+    with open('weather_stations.csv', 'rb') as file:
         for station in file.readlines():
-            if station.startswith('#'):
+            if station.startswith(b'#'):
                 continue
             
-            station_names.append(station.split(';')[0])
+            station_names.append(station.split(b';')[0])
 
     return random.sample(sorted(set(station_names)), n_stations)
 
@@ -105,24 +106,25 @@ def build_test_data(weather_station_names, args):
     Generates and writes to file the requested length of test data
     """
     num_rows_to_create = args.measurements
-    output_file_name = f"{args.output}.txt"
+    output_file_name = args.output
     start_time = time.time()
     coldest_temp = -99.9
     hottest_temp = 99.9
     batch_size = min(num_rows_to_create, 2_000) # instead of writing line by line to file, process a batch of stations and put it to disk
-    progress_step = max(1, (num_rows_to_create // batch_size) // 100)
+    progress_step = max(1, num_rows_to_create // 100)
 
     print(f'Using seed {args.seed}')
     print(f'Effective number of stations {len(weather_station_names)}')
     print('Building test data...')
 
     try:
-        with open(output_file_name, 'w') as file:
-            for s in range(0, num_rows_to_create // batch_size):
-                
-                batch = random.choices(weather_station_names, k=batch_size)
-                prepped_deviated_batch = ''.join(f"{station};{random.uniform(coldest_temp, hottest_temp):.1f}\n" for station in batch) # :.1f should quicker than round on a large scale, because round utilizes mathematical operation
-                file.write(prepped_deviated_batch)
+        with BufferedWriter(open(output_file_name, 'wb')) as file:
+            # print(type(file))
+
+            # sys.exit(1)
+
+            for s in range(num_rows_to_create):
+                file.write(b"%s;%.1f\n" % (random.choice(weather_station_names), random.uniform(coldest_temp, hottest_temp)))
                 
                 # Update progress bar every 1%
                 if s % progress_step == 0 or s == num_rows_to_create - 1:
