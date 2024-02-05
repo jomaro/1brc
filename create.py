@@ -21,6 +21,7 @@ import argparse
 import math
 import os
 import random
+from random import Random
 import statistics
 import sys
 import time
@@ -45,19 +46,19 @@ def parse_args():
     return args
 
 
-def build_weather_station_name_list(n_stations: int):
+def build_weather_station_name_list(n_stations: int, stations_rnd: Random):
     """
     Grabs the weather station names from example data provided in repo and deduplicates
     """
     station_names = []
-    with open('weather_stations.csv', 'r') as file:
+    with open('weather_stations.csv', 'rb') as file:
         for station in file.readlines():
-            if station.startswith('#'):
+            if station.startswith(b'#'):
                 continue
             
-            station_names.append(station.split(';')[0])
+            station_names.append(station.split(b';')[0])
 
-    return random.sample(sorted(set(station_names)), n_stations)
+    return stations_rnd.sample(sorted(set(station_names)), n_stations)
 
 
 def convert_bytes(num):
@@ -100,7 +101,7 @@ def estimate_file_size(weather_station_names, num_rows_to_create):
     print(f"Estimated max file size is:  {human_file_size}.")
 
 
-def build_test_data(weather_station_names, args):
+def build_test_data(weather_station_names, args, stations_rnd, measurements_rnd):
     """
     Generates and writes to file the requested length of test data
     """
@@ -116,11 +117,11 @@ def build_test_data(weather_station_names, args):
     print('Building test data...')
 
     try:
-        with open(args.output, 'w') as file:
+        with open(args.output, 'wb') as file:
             for s in range(0, num_rows_to_create // batch_size):
                 
-                batch = random.choices(weather_station_names, k=batch_size)
-                prepped_deviated_batch = ''.join(f"{station};{random.uniform(coldest_temp, hottest_temp):.1f}\n" for station in batch) # :.1f should quicker than round on a large scale, because round utilizes mathematical operation
+                batch = stations_rnd.choices(weather_station_names, k=batch_size)
+                prepped_deviated_batch = b''.join(b"%b;%.1f\n" % (station, measurements_rnd.uniform(coldest_temp, hottest_temp)) for station in batch)  # f"{station};{random.uniform(coldest_temp, hottest_temp):.1f}\n" for station in batch) # :.1f should quicker than round on a large scale, because round utilizes mathematical operation
                 file.write(prepped_deviated_batch)
                 
                 # Update progress bar every 1%
@@ -149,13 +150,17 @@ def main():
     """
     args = parse_args()
 
-    random.seed(args.seed)
+    stations_rnd = Random()
+    measurements_rnd = Random()
 
-    weather_station_names = build_weather_station_name_list(args.stations)
+    stations_rnd.seed(args.seed)
+    measurements_rnd.seed(args.seed)
+
+    weather_station_names = build_weather_station_name_list(args.stations, stations_rnd)
 
     estimate_file_size(weather_station_names, args.measurements)
 
-    build_test_data(weather_station_names, args)
+    build_test_data(weather_station_names, args, stations_rnd, measurements_rnd)
 
     print("Test data build complete.")
 
