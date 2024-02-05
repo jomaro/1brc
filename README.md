@@ -17,6 +17,10 @@ Note: The implementation does not follow the specified output format
 | Elx.parallel_v1 | 1m   |            439 |          8 |
 | Elx.parallel_v1 | 10m  |           4289 |        114 |
 | Elx.parallel_v1 | 1b   |         477376 |       3304 |
+| Rst.serial_v1   | 1k   |              0 |          0 |
+| Rst.serial_v1   | 1m   |            122 |          0 |
+| Rst.serial_v1   | 10m  |           1205 |         14 |
+| Rst.serial_v1   | 1b   |         167712 |        680 |
 
 
 Test data generated with seed `1707066384638`
@@ -44,7 +48,7 @@ python create.py -m 10_000_000 -o m10m.txt
 python create.py -m 1_000_000_000 -o m1b.txt
 ```
 
-3. Run the elixir versions 
+3. Run the elixir versions
 
 ```
 cd elx
@@ -54,13 +58,25 @@ mix compile
 Run sequential version
 
 ```
-mix run -e "Elx.serial_v1(\"m10m\")"
+mix run -e "Elx.serial_v1(\"m1b\")"
 ```
 
 
 Run parallel version
 
 ```
-mix run -e "Elx.parallel_v1(\"m10m\")"
+mix run -e "Elx.parallel_v1(\"m1b\")"
 ```
 
+4. Run the rust version
+
+```
+cd rst
+cargo build --release
+```
+
+Run sequential version
+
+```
+./target/release/rst ../m1b.txt
+```
